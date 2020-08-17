@@ -79,6 +79,7 @@ public class WXService {
                 if (WXMessageUtil.MESSAGE_SUBSCIBE.equals(eventType)) {
                     //关注事件
                     message = WXMessageUtil.subscribeForText(toUserName, fromUserName);
+                    log.info("fromUserName: "+ fromUserName);
 
                     //保存用户信息
                     String result = HttpUtil.get(MessageFormat
