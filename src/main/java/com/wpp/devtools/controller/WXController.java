@@ -32,14 +32,20 @@ public class WXController {
     private WXService wxService;
 
     //验证token时候用一次
-/*    @PostMapping("wxUrlTokenValid")
-    public String wxUrlTokenValid() {
+    @GetMapping("wxUrlTokenValid")
+    public String validToken() {
         return WXUtils.checkUrl(request);
-    }*/
+    }
 
     @PostMapping("wxUrlTokenValid")
     public void wxUrlTokenValid() throws IOException {
         wxService.wxUrlTokenValid(request, response);
+    }
+
+    @ApiOperation("创建菜单")
+    @PostMapping("createMenu")
+    public void createMenu() {
+        wxService.createMenu();
     }
 
 }

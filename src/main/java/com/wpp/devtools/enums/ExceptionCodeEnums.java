@@ -35,6 +35,7 @@ public enum ExceptionCodeEnums {
     COMPLETE(-20021, "已完成, 无需操作"),
     PASSWORD_UNQUALIFIED(-20022, "密码必须包含大小写字母、数字、特殊符号的8位以上组合"),
     STREAM_ERROR(-20023, "流异常"),
+    WX_HTTP_REQUEST_ERROR(-200024, "微信接口请求异常"),
 
     ;
 

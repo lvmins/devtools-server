@@ -4,7 +4,11 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.wpp.devtools.config.WXKeyconfig;
 import com.wpp.devtools.config.WXconfig;
+import com.wpp.devtools.domain.entity.Menu;
 import com.wpp.devtools.domain.entity.User;
+import com.wpp.devtools.enums.ExceptionCodeEnums;
+import com.wpp.devtools.exception.CustomException;
+import com.wpp.devtools.repository.MenuRepository;
 import com.wpp.devtools.repository.UserRepository;
 import com.wpp.devtools.util.HttpUtil;
 import com.wpp.devtools.util.RedistUtil;
@@ -15,6 +19,7 @@ import java.io.PrintWriter;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -36,6 +41,8 @@ public class WXService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private MenuRepository menuRepository;
 
     /**
      * 获取access_token
@@ -50,6 +57,7 @@ public class WXService {
             String result = HttpUtil.get(MessageFormat
                     .format(WXconfig.WX_GET_ACCESS_TOKEN_URL, wxKeyconfig.getAppId(),
                             wxKeyconfig.getAppSecret()), null);
+            isSucessWXApiByResult(result);
             JSONObject jo = JSONObject.parseObject(result);
             accessToken = jo.getString("access_token");
             //微信失效2小时, 这里保存1小时
@@ -79,10 +87,9 @@ public class WXService {
                 if (WXMessageUtil.MESSAGE_SUBSCIBE.equals(eventType)) {
                     //关注事件
                     message = WXMessageUtil.subscribeForText(toUserName, fromUserName);
-                    log.info("fromUserName: "+ fromUserName);
 
                     //保存用户信息
-                    String result = HttpUtil.get(MessageFormat
+/*                    String result = HttpUtil.get(MessageFormat
                                     .format(WXconfig.WX_GET_USER_INFO, getAccessToken(), fromUserName),
                             null);
                     log.info("result: "+ result);
@@ -97,17 +104,17 @@ public class WXService {
                         olduser.setSubscribeTime(new Timestamp(new Date().getTime()));
                         olduser.setSubscribe(1L);
                         userRepository.save(olduser);
-                    }
+                    }*/
 
 
                 } else if (WXMessageUtil.MESSAGE_UNSUBSCIBE.equals(eventType)) {
                     //取消订阅事件
                     message = "";
-                    User user = userRepository.findByOpenid(fromUserName);
+/*                    User user = userRepository.findByOpenid(fromUserName);
                     if (null != user) {
                         user.setSubscribe(0L);
                         userRepository.save(user);
-                    }
+                    }*/
                 }
             }
         } catch (Exception e) {
@@ -118,5 +125,25 @@ public class WXService {
                 out.close();
             }
         }
+    }
+
+
+    /**
+     * 创建菜单
+     */
+    public void createMenu() {
+        List<Menu> list = menuRepository.findAll();
+        JSONObject jo = new JSONObject();
+        jo.put("button",list);
+        String result = HttpUtil.post(MessageFormat.format(WXconfig.WX_CREATE_MENU_URL, getAccessToken()), null);
+        isSucessWXApiByResult(result);
+    }
+
+    public void isSucessWXApiByResult(String result) {
+        JSONObject jo = JSONObject.parseObject(result);
+        if(null != jo.get("errcode") && Integer.parseInt(jo.get("errcode").toString()) != 0) {
+            throw new CustomException(ExceptionCodeEnums.WX_HTTP_REQUEST_ERROR, jo.get("errmsg").toString());
+        }
+
     }
 }
