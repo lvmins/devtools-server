@@ -18,11 +18,13 @@ import java.util.Date;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class WXService {
 
     @Autowired
@@ -82,6 +84,7 @@ public class WXService {
                     String result = HttpUtil.get(MessageFormat
                                     .format(WXconfig.WX_GET_USER_INFO, getAccessToken(), fromUserName),
                             null);
+                    log.info("result: "+ result);
                     JSONObject jo = JSON.parseObject(result);
                     jo.put("subscribe_time",
                             Long.parseLong(jo.get("subscribe_time").toString()) * 1000);
